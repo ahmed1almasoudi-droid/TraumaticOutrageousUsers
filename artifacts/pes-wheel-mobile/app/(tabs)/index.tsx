@@ -14,11 +14,10 @@ import {
 import Svg, { Circle, G, Path, Text as SvgText } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
-import { usePesWheel, type Mission, type Reward } from '@/context/PesWheelContext';
+import { usePesWheel, WHEEL_OUTCOMES, type Mission, type Reward } from '@/context/PesWheelContext';
 
 type Tab = 'wheel' | 'prizes' | 'missions' | 'account';
 
-const prizeAmounts = [50, 130, 300, 550, 750, 1040, 2130, 3250, 5700, 12800];
 const tabItems: Array<{ id: Tab; label: string; icon: keyof typeof Ionicons.glyphMap }> = [
   { id: 'wheel', label: 'العجلة', icon: 'disc-outline' },
   { id: 'prizes', label: 'جوائزي', icon: 'gift-outline' },
@@ -122,10 +121,10 @@ function WheelGraphic({ rotation, spinning }: { rotation: Animated.Value; spinni
   const colors = useColors();
   const segmentColors = [colors.gold, colors.green, colors.orange, colors.violet, colors.blue, colors.gold, colors.pink, colors.blue, colors.violet, colors.orange];
   const rotate = rotation.interpolate({ inputRange: [0, 3600], outputRange: ['0deg', '3600deg'] });
-  const size = 300;
+  const size = 320;
   const center = size / 2;
-  const radius = 132;
-  const segment = 360 / prizeAmounts.length;
+  const radius = 146;
+  const segment = 360 / WHEEL_OUTCOMES.length;
 
   return (
     <View style={styles.wheelShell}>
@@ -134,23 +133,33 @@ function WheelGraphic({ rotation, spinning }: { rotation: Animated.Value; spinni
         <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           <Circle cx={center} cy={center} r={radius + 2} fill={colors.panel} stroke={colors.gold} strokeWidth={4} />
           <G>
-            {prizeAmounts.map((amount, index) => {
+            {WHEEL_OUTCOMES.map((outcome, index) => {
               const start = index * segment;
-              const labelPoint = polarToCartesian(center, 92, start + segment / 2);
+              const labelPoint = polarToCartesian(center, 104, start + segment / 2);
               return (
-                <G key={amount}>
-                  <Path d={describeSegment(center, radius, start, start + segment - 1)} fill={segmentColors[index]} stroke={colors.goldSoft + 'aa'} strokeWidth={1} />
-                  <SvgText x={labelPoint.x} y={labelPoint.y - 2} fill={index === 0 || index === 5 ? colors.primaryForeground : colors.goldSoft} fontSize="14" fontWeight="800" textAnchor="middle">
-                    {formatNumber(amount)}
+                <G key={outcome.id}>
+                  <Path d={describeSegment(center, radius, start, start + segment - 1)} fill={index === 0 ? colors.destructive : segmentColors[index % segmentColors.length]} stroke={colors.goldSoft + 'aa'} strokeWidth={1} />
+                  <SvgText x={labelPoint.x} y={index === 0 ? labelPoint.y - 7 : labelPoint.y - 2} fill={index === 0 ? colors.goldSoft : colors.primaryForeground} fontSize={index === 0 ? '13' : '15'} fontWeight="900" textAnchor="middle">
+                    {outcome.label}
                   </SvgText>
-                  <Circle cx={labelPoint.x} cy={labelPoint.y + 12} r={5} fill={colors.goldSoft} stroke={colors.orange} strokeWidth={2} />
+                  {index === 0 ? (
+                    <G>
+                      <Circle cx={labelPoint.x} cy={labelPoint.y + 12} r={15} fill={colors.goldSoft} stroke={colors.orange} strokeWidth={2} />
+                      <SvgText x={labelPoint.x} y={labelPoint.y + 18} fill={colors.destructive} fontSize="17" fontWeight="900" textAnchor="middle">↻</SvgText>
+                    </G>
+                  ) : (
+                    <G>
+                      <Circle cx={labelPoint.x - 6} cy={labelPoint.y + 12} r={6} fill={colors.goldSoft} stroke={colors.orange} strokeWidth={2} />
+                      <Circle cx={labelPoint.x + 4} cy={labelPoint.y + 15} r={6} fill={colors.gold} stroke={colors.orange} strokeWidth={2} />
+                    </G>
+                  )}
                 </G>
               );
             })}
           </G>
           <Circle cx={center} cy={center} r={46} fill={colors.panel} stroke={colors.gold} strokeWidth={6} />
           <Circle cx={center} cy={center} r={33} fill={colors.violet} stroke={colors.goldSoft} strokeWidth={1} />
-          <SvgText x={center} y={center + 6} fill={colors.goldSoft} fontSize="17" fontWeight="900" textAnchor="middle">PES</SvgText>
+          <SvgText x={center} y={center + 7} fill={colors.goldSoft} fontSize="19" fontWeight="900" textAnchor="middle">SPIN</SvgText>
         </Svg>
       </Animated.View>
       <View style={[styles.pointer, { backgroundColor: colors.violet, borderColor: colors.goldSoft }]}>
@@ -206,8 +215,8 @@ function ResultCard({ reward, onClose }: { reward: Reward; onClose: () => void }
     <View style={[styles.resultCard, { backgroundColor: colors.panelRaised, borderColor: colors.gold + '88' }]} accessibilityLiveRegion="polite">
       <View style={[styles.resultIcon, { backgroundColor: colors.gold + '1F' }]}><Ionicons name="trophy-outline" size={25} color={colors.gold} /></View>
       <View style={styles.resultCopy}>
-        <Text style={[styles.resultCaption, { color: colors.mutedForeground }]}>مبروك! ربحت</Text>
-        <View style={styles.resultAmount}><CoinBadge size={22} /><Text style={[styles.resultText, { color: colors.goldSoft }]}>{formatNumber(reward.amount)} عملة</Text></View>
+        <Text style={[styles.resultCaption, { color: colors.mutedForeground }]}>{reward.amount > 0 ? 'مبروك! ربحت' : 'هذه المرة'}</Text>
+        <View style={styles.resultAmount}>{reward.amount > 0 && <CoinBadge size={22} />}<Text style={[styles.resultText, { color: colors.goldSoft }]}>{reward.label}</Text></View>
       </View>
       <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="إغلاق النتيجة" hitSlop={12}><Ionicons name="close" size={18} color={colors.mutedForeground} /></Pressable>
     </View>
@@ -233,8 +242,8 @@ function RewardsView({ history }: { history: Reward[] }) {
       <Text style={[styles.utilitySubtitle, { color: colors.mutedForeground }]}>كل ما جمعته من العجلة</Text>
       {history.length === 0 ? <EmptyState icon="gift-outline" title="ما عندك جوائز بعد" body="لفّ العجلة اليوم حتى تظهر أول جائزة هنا." colors={colors} /> : history.map((reward) => (
         <View key={reward.id} style={[styles.historyRow, { backgroundColor: colors.card, borderColor: colors.border + '55' }]}>
-          <View style={[styles.historyIcon, { backgroundColor: colors.gold + '1C' }]}><CoinBadge size={24} /></View>
-          <View style={styles.historyCopy}><Text style={[styles.historyTitle, { color: colors.goldSoft }]}>{formatNumber(reward.amount)} كوينز</Text><Text style={[styles.historyDate, { color: colors.mutedForeground }]}>جائزة اللفة اليومية</Text></View>
+          <View style={[styles.historyIcon, { backgroundColor: reward.amount > 0 ? colors.gold + '1C' : colors.destructive + '1C' }]}>{reward.amount > 0 ? <CoinBadge size={24} /> : <Ionicons name="refresh-outline" size={24} color={colors.destructive} />}</View>
+          <View style={styles.historyCopy}><Text style={[styles.historyTitle, { color: colors.goldSoft }]}>{reward.label}</Text><Text style={[styles.historyDate, { color: colors.mutedForeground }]}>{reward.amount > 0 ? 'جائزة اللفة اليومية' : 'حظ أوفر — بدون خصم'}</Text></View>
           <Ionicons name="checkmark-circle" size={20} color={colors.green} />
         </View>
       ))}
@@ -392,12 +401,12 @@ const styles = StyleSheet.create({
   coinInner: { opacity: 0.85 },
   coinLine: { position: 'absolute', left: 3, right: 3, height: 1 },
   homeContent: { alignItems: 'center', paddingHorizontal: 20, paddingTop: 4, paddingBottom: 22 },
-  homeKicker: { fontSize: 10, fontWeight: '800', letterSpacing: 2, marginTop: 4 },
-  homeTitle: { fontSize: 29, fontWeight: '900', marginTop: 2 },
-  homeSubtitle: { fontSize: 12, marginTop: 3, marginBottom: 6 },
-  wheelShell: { width: 320, height: 328, alignItems: 'center', justifyContent: 'center', marginTop: 7, marginBottom: 7 },
-  wheelOuter: { position: 'absolute', width: 314, height: 314, borderRadius: 157, borderWidth: 4, shadowOpacity: 0.55, shadowRadius: 28, shadowOffset: { width: 0, height: 0 }, elevation: 8 },
-  wheelRotate: { width: 300, height: 300, alignItems: 'center', justifyContent: 'center' },
+  homeKicker: { fontSize: 10, fontWeight: '800', letterSpacing: 2, marginTop: 2 },
+  homeTitle: { fontSize: 32, fontWeight: '900', marginTop: 0, textShadowColor: '#9745d4', textShadowRadius: 12 },
+  homeSubtitle: { fontSize: 16, fontWeight: '700', marginTop: 2, marginBottom: 0 },
+  wheelShell: { width: 340, height: 356, alignItems: 'center', justifyContent: 'center', marginTop: -1, marginBottom: -4 },
+  wheelOuter: { position: 'absolute', width: 334, height: 334, borderRadius: 167, borderWidth: 5, shadowOpacity: 0.65, shadowRadius: 30, shadowOffset: { width: 0, height: 0 }, elevation: 9 },
+  wheelRotate: { width: 320, height: 320, alignItems: 'center', justifyContent: 'center' },
   pointer: { position: 'absolute', top: 0, width: 43, height: 47, borderRadius: 18, borderWidth: 2, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 5 },
   pointerDot: { width: 15, height: 15, borderRadius: 8, borderWidth: 2, borderColor: '#fff1a9' },
   spinAura: { position: 'absolute', width: 306, height: 306, borderRadius: 153, borderWidth: 2, opacity: 0.7 },

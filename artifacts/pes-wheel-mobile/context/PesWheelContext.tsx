@@ -12,6 +12,8 @@ import React, {
 export type Reward = {
   id: string;
   amount: number;
+  label: string;
+  outcomeId: string;
   createdAt: number;
 };
 
@@ -38,7 +40,18 @@ type PesWheelContextValue = {
 
 const STORAGE_KEY = 'pes-wheel-local-state-v1';
 const DAY_IN_SECONDS = 24 * 60 * 60;
-const PRIZE_AMOUNTS = [50, 130, 300, 550, 750, 1040, 2130, 3250, 5700, 12800];
+export const WHEEL_OUTCOMES = [
+  { id: 'luck-better', label: 'حظ أوفر', amount: 0, probability: 100 },
+  { id: 'coins-130', label: '130', amount: 130, probability: 0 },
+  { id: 'coins-300', label: '300', amount: 300, probability: 0 },
+  { id: 'coins-550', label: '550', amount: 550, probability: 0 },
+  { id: 'coins-750', label: '750', amount: 750, probability: 0 },
+  { id: 'coins-1040', label: '1040', amount: 1040, probability: 0 },
+  { id: 'coins-2130', label: '2130', amount: 2130, probability: 0 },
+  { id: 'coins-3250', label: '3250', amount: 3250, probability: 0 },
+  { id: 'coins-5700', label: '5700', amount: 5700, probability: 0 },
+  { id: 'coins-12800', label: '12800', amount: 12800, probability: 0 },
+] as const;
 
 const initialMissions: Mission[] = [
   {
@@ -86,11 +99,27 @@ export function PesWheelProvider({ children }: { children: ReactNode }) {
         if (saved && mounted) {
           const parsed = JSON.parse(saved) as {
             balance?: number;
-            rewardHistory?: Reward[];
+            rewardHistory?: Array<Partial<Reward>>;
             lastSpinAt?: number | null;
           };
           setBalance(parsed.balance ?? 1250);
-          setRewardHistory(parsed.rewardHistory ?? []);
+          setRewardHistory(
+            (parsed.rewardHistory ?? []).map((reward, index) => ({
+              id: reward.id ?? `legacy-${index}`,
+              amount: reward.amount ?? 0,
+              label:
+                reward.label ??
+                (reward.amount && reward.amount > 0
+                  ? String(reward.amount)
+                  : 'حظ أوفر'),
+              outcomeId:
+                reward.outcomeId ??
+                (reward.amount && reward.amount > 0
+                  ? 'legacy-coins'
+                  : 'luck-better'),
+              createdAt: reward.createdAt ?? Date.now(),
+            })),
+          );
           setLastSpinAt(parsed.lastSpinAt ?? null);
           setSecondsUntilNextSpin(getRemainingSeconds(parsed.lastSpinAt ?? null));
         }
@@ -127,17 +156,24 @@ export function PesWheelProvider({ children }: { children: ReactNode }) {
     if (!isReady || isSpinning || secondsUntilNextSpin > 0) return null;
     setIsSpinning(true);
 
-    const selectedAmount =
-      PRIZE_AMOUNTS[Math.floor(Math.random() * PRIZE_AMOUNTS.length)];
+    // Preview configuration: luck-better owns 100% of the probability budget.
+    // Keep this explicit so changing the demo odds later is deliberate.
+    const selectedOutcome = WHEEL_OUTCOMES.find(
+      (outcome) => outcome.probability === 100,
+    ) ?? WHEEL_OUTCOMES[0];
     const reward: Reward = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      amount: selectedAmount,
+      label: selectedOutcome.label,
+      outcomeId: selectedOutcome.id,
+      amount: selectedOutcome.amount,
       createdAt: Date.now(),
     };
     const nextHistory = [reward, ...rewardHistory].slice(0, 20);
     const now = Date.now();
 
-    setBalance((current) => current + selectedAmount);
+    if (selectedOutcome.amount > 0) {
+      setBalance((current) => current + selectedOutcome.amount);
+    }
     setRewardHistory(nextHistory);
     setLastSpinAt(now);
     setSecondsUntilNextSpin(DAY_IN_SECONDS);
