@@ -313,82 +313,30 @@ function Drawer({ onClose, onSelect }: { onClose: () => void; onSelect: (tab: Ta
   );
 }
 
-function ReferenceWheelView({
-  onSpin,
-  onMenu,
-  onSelect,
-  disabled,
-  rotation,
-  spinning,
-}: {
-  onSpin: () => void;
-  onMenu: () => void;
-  onSelect: (tab: Tab) => void;
-  disabled: boolean;
-  rotation: Animated.Value;
-  spinning: boolean;
-}) {
+function PlayersHero() {
   const colors = useColors();
-  const motionRotate = rotation.interpolate({
-    inputRange: [0, 3600],
-    outputRange: ['0deg', '3600deg'],
-  });
 
   return (
-    <View style={styles.referenceFrame} testID="reference-wheel-screen">
+    <View style={[styles.playersHero, { borderColor: colors.violetBright + '88', shadowColor: colors.violetBright }]}>
       <ImageBackground
         source={require('../../assets/images/reference-home.png')}
-        resizeMode="stretch"
-        style={StyleSheet.absoluteFill}
+        resizeMode="cover"
+        style={styles.playersHeroImage}
         accessible={false}
       />
-      <Animated.View
+      <LinearGradient
         pointerEvents="none"
-        style={[
-          styles.referenceMotion,
-          { transform: [{ rotate: motionRotate }], opacity: spinning ? 1 : 0 },
-        ]}
-      >
-        <View style={[styles.referenceMotionOrbit, { borderColor: colors.gold + '99' }]} />
-        <View style={[styles.referenceMotionDot, { backgroundColor: colors.goldSoft, borderColor: colors.violetBright }]} />
-        <View style={[styles.referenceMotionDot, styles.referenceMotionDotRight, { backgroundColor: colors.goldSoft, borderColor: colors.violetBright }]} />
-      </Animated.View>
-      <Pressable
-        onPress={onMenu}
-        style={({ pressed }) => [
-          styles.referenceMenuHotspot,
-          styles.referenceHotspot,
-          { borderColor: colors.violetBright + 'AA', opacity: pressed ? 0.55 : 1 },
-        ]}
-        accessibilityRole="button"
-        accessibilityLabel="فتح القائمة"
-        testID="reference-menu-button"
+        colors={['transparent', colors.background + 'F5']}
+        style={styles.playersHeroFade}
       />
-      <Pressable
-        onPress={onSpin}
-        disabled={disabled}
-        style={({ pressed }) => [
-          styles.referenceSpinHotspot,
-          styles.referenceHotspot,
-          {
-            borderColor: disabled ? colors.mutedForeground + '55' : colors.gold + '55',
-            opacity: pressed ? 0.55 : 1,
-          },
-        ]}
-        accessibilityRole="button"
-        accessibilityLabel={disabled ? 'اللف غير متاح الآن' : 'لف العجلة'}
-        testID="reference-spin-button"
-      />
-      {tabItems.map((item, index) => (
-        <Pressable
-          key={item.id}
-          onPress={() => onSelect(item.id)}
-          style={[styles.referenceTabHotspot, { left: `${index * 25}%` }]}
-          accessibilityRole="button"
-          accessibilityLabel={item.label}
-          testID={`reference-tab-${item.id}`}
-        />
-      ))}
+      <View pointerEvents="none" style={styles.playersHeroCopy}>
+        <View style={[styles.heroBadge, { backgroundColor: colors.violet + 'DD', borderColor: colors.gold + 'BB' }]}>
+          <Ionicons name="flash" size={12} color={colors.goldSoft} />
+          <Text style={[styles.heroBadgeText, { color: colors.goldSoft }]}>تحدّي اليوم</Text>
+        </View>
+        <Text style={[styles.heroPrompt, { color: colors.foreground }]}>هل أنت مستعد للفة؟</Text>
+        <Text style={[styles.heroSubline, { color: colors.goldSoft }]}>جائزة مجانية كل 24 ساعة</Text>
+      </View>
     </View>
   );
 }
@@ -429,22 +377,27 @@ export default function TabOneScreen() {
       <View pointerEvents="none" style={[styles.glow, styles.glowLeft, { backgroundColor: colors.violet }]} />
       <View pointerEvents="none" style={[styles.glow, styles.glowBottom, { backgroundColor: colors.orange }]} />
       <View pointerEvents="none" style={styles.stadiumLines} />
+      <Header balance={balance} onMenu={() => setDrawerOpen(true)} />
       {activeTab === 'wheel' ? (
-        <ReferenceWheelView
-          onSpin={handleSpin}
-          onMenu={() => setDrawerOpen(true)}
-          onSelect={setActiveTab}
-          disabled={isSpinning || secondsUntilNextSpin > 0}
-          rotation={wheelRotation}
-          spinning={isSpinning}
-        />
-      ) : (
-        <>
-          <Header balance={balance} onMenu={() => setDrawerOpen(true)} />
-          {activeTab === 'prizes' ? <RewardsView history={rewardHistory} /> : activeTab === 'missions' ? <MissionsView missions={missions} /> : <AccountView balance={balance} />}
-          <BottomNav active={activeTab} onChange={setActiveTab} />
-        </>
-      )}
+        <ScrollView contentContainerStyle={styles.homeContent} showsVerticalScrollIndicator={false}>
+          <PlayersHero />
+          <View style={styles.homeHeading}>
+            <Text style={[styles.homeKicker, { color: colors.gold }]}>مكافأة اليوم</Text>
+            <Text style={[styles.homeTitle, { color: colors.goldSoft }]}>عجلة الحظ</Text>
+            <Text style={[styles.homeSubtitle, { color: colors.mutedForeground }]}>لفّ واربح عملاتك المجانية</Text>
+          </View>
+          <WheelGraphic rotation={wheelRotation} spinning={isSpinning} />
+          <Pressable onPress={handleSpin} disabled={isSpinning || secondsUntilNextSpin > 0} accessibilityRole="button" accessibilityLabel={isSpinning ? 'العجلة تدور' : secondsUntilNextSpin > 0 ? 'اللف غير متاح الآن' : 'لف العجلة'} testID="spin-button" style={({ pressed }) => [styles.primaryButton, { opacity: pressed ? 0.86 : 1 }, (isSpinning || secondsUntilNextSpin > 0) && styles.disabledButton]}>
+            <LinearGradient colors={isSpinning || secondsUntilNextSpin > 0 ? [colors.secondary, colors.muted] : [colors.gold, colors.goldSoft, colors.orange]} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={styles.primaryButtonGradient}>
+              <Ionicons name={isSpinning ? 'sync-outline' : 'gift-outline'} size={20} color={isSpinning || secondsUntilNextSpin > 0 ? colors.mutedForeground : colors.primaryForeground} />
+              <Text style={[styles.primaryButtonText, { color: isSpinning || secondsUntilNextSpin > 0 ? colors.mutedForeground : colors.primaryForeground }]}>{isSpinning ? 'جاري الدوران...' : secondsUntilNextSpin > 0 ? 'عد غداً للمحاولة' : 'لف العجلة'}</Text>
+            </LinearGradient>
+          </Pressable>
+          <View style={styles.countdownRow}><Ionicons name="time-outline" size={15} color={colors.gold} /><Text style={[styles.countdownLabel, { color: colors.mutedForeground }]}>{secondsUntilNextSpin > 0 ? 'اللفة التالية بعد' : 'لفّة مجانية متاحة الآن'}</Text>{secondsUntilNextSpin > 0 && <Text style={[styles.countdownValue, { color: colors.goldSoft }]}>{countdownText}</Text>}</View>
+          <Text style={[styles.demoLabel, { color: colors.mutedForeground }]}><Ionicons name="shield-checkmark-outline" size={12} color={colors.violetBright} /> وضع معاينة — الجوائز تجريبية</Text>
+        </ScrollView>
+      ) : activeTab === 'prizes' ? <RewardsView history={rewardHistory} /> : activeTab === 'missions' ? <MissionsView missions={missions} /> : <AccountView balance={balance} />}
+      <BottomNav active={activeTab} onChange={setActiveTab} />
       {result && <View style={styles.resultPosition}><ResultCard reward={result} onClose={() => setResult(null)} /></View>}
       {drawerOpen && <Drawer onClose={() => setDrawerOpen(false)} onSelect={setActiveTab} />}
     </View>
@@ -453,15 +406,6 @@ export default function TabOneScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, overflow: 'hidden' },
-  referenceFrame: { flex: 1, position: 'relative', overflow: 'hidden' },
-  referenceHotspot: { position: 'absolute', zIndex: 3 },
-  referenceMotion: { position: 'absolute', zIndex: 2, left: '7%', top: '24%', width: '86%', aspectRatio: 1, borderRadius: 999 },
-  referenceMotionOrbit: { ...StyleSheet.absoluteFillObject, borderWidth: 2, borderRadius: 999 },
-  referenceMotionDot: { position: 'absolute', top: -4, left: '50%', marginLeft: -5, width: 10, height: 10, borderRadius: 5, borderWidth: 2 },
-  referenceMotionDotRight: { top: '50%', left: '100%', marginLeft: -5, marginTop: -5 },
-  referenceMenuHotspot: { left: '1%', top: '2%', width: '19%', height: '10%', borderRadius: 999, borderWidth: 1 },
-  referenceSpinHotspot: { left: '21%', top: '79%', width: '58%', height: '11%', borderRadius: 15, borderWidth: 2 },
-  referenceTabHotspot: { position: 'absolute', zIndex: 4, bottom: 0, width: '25%', height: '14%' },
   glow: { position: 'absolute', width: 280, height: 280, borderRadius: 140, opacity: 0.15 },
   glowLeft: { left: -150, top: 150 },
   glowBottom: { right: -160, bottom: 70 },
@@ -508,6 +452,15 @@ const styles = StyleSheet.create({
   countdownLabel: { fontSize: 11 },
   countdownValue: { fontSize: 13, fontWeight: '800', fontVariant: ['tabular-nums'] },
   demoLabel: { fontSize: 9, marginTop: 13 },
+  playersHero: { width: '100%', height: 205, borderRadius: 24, borderWidth: 1, overflow: 'hidden', marginBottom: 13, shadowOpacity: 0.5, shadowRadius: 22, shadowOffset: { width: 0, height: 8 }, elevation: 7 },
+  playersHeroImage: { ...StyleSheet.absoluteFillObject },
+  playersHeroFade: { ...StyleSheet.absoluteFillObject, top: '35%' },
+  playersHeroCopy: { position: 'absolute', left: 14, right: 14, bottom: 13, alignItems: 'center' },
+  heroBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 5 },
+  heroBadgeText: { fontSize: 10, fontWeight: '900' },
+  heroPrompt: { fontSize: 18, fontWeight: '900', marginTop: 6, textShadowColor: '#000', textShadowRadius: 8 },
+  heroSubline: { fontSize: 11, fontWeight: '800', marginTop: 2 },
+  homeHeading: { alignItems: 'center' },
   bottomNav: { zIndex: 5, minHeight: 78, flexDirection: 'row', borderTopWidth: 1, paddingHorizontal: 8, paddingTop: 7, paddingBottom: 8 },
   bottomItem: { flex: 1, borderRadius: 13, alignItems: 'center', justifyContent: 'center', gap: 4 },
   bottomLabel: { fontSize: 10, fontWeight: '600' },
