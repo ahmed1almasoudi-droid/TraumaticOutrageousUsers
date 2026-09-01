@@ -39,7 +39,7 @@ type PesWheelContextValue = {
   missions: Mission[];
 };
 
-const STORAGE_KEY = 'pes-wheel-local-state-v1';
+const STORAGE_KEY = 'pes-wheel-local-state-v2';
 const DAY_IN_SECONDS = 24 * 60 * 60;
 export const WHEEL_OUTCOMES = [
   { id: 'luck-better', label: 'حظ أوفر', amount: 0, probability: 100 },

@@ -318,24 +318,48 @@ function ReferenceWheelView({
   onMenu,
   onSelect,
   disabled,
+  rotation,
+  spinning,
 }: {
   onSpin: () => void;
   onMenu: () => void;
   onSelect: (tab: Tab) => void;
   disabled: boolean;
+  rotation: Animated.Value;
+  spinning: boolean;
 }) {
+  const colors = useColors();
+  const motionRotate = rotation.interpolate({
+    inputRange: [0, 3600],
+    outputRange: ['0deg', '3600deg'],
+  });
+
   return (
     <View style={styles.referenceFrame} testID="reference-wheel-screen">
       <ImageBackground
         source={require('../../assets/images/reference-home.png')}
-        resizeMode="cover"
+        resizeMode="stretch"
         style={StyleSheet.absoluteFill}
-        accessible
-        accessibilityLabel="تصميم عجلة الحظ المرجعي"
+        accessible={false}
       />
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.referenceMotion,
+          { transform: [{ rotate: motionRotate }], opacity: spinning ? 1 : 0 },
+        ]}
+      >
+        <View style={[styles.referenceMotionOrbit, { borderColor: colors.gold + '99' }]} />
+        <View style={[styles.referenceMotionDot, { backgroundColor: colors.goldSoft, borderColor: colors.violetBright }]} />
+        <View style={[styles.referenceMotionDot, styles.referenceMotionDotRight, { backgroundColor: colors.goldSoft, borderColor: colors.violetBright }]} />
+      </Animated.View>
       <Pressable
         onPress={onMenu}
-        style={[styles.referenceMenuHotspot, styles.referenceHotspot]}
+        style={({ pressed }) => [
+          styles.referenceMenuHotspot,
+          styles.referenceHotspot,
+          { borderColor: colors.violetBright + 'AA', opacity: pressed ? 0.55 : 1 },
+        ]}
         accessibilityRole="button"
         accessibilityLabel="فتح القائمة"
         testID="reference-menu-button"
@@ -343,7 +367,14 @@ function ReferenceWheelView({
       <Pressable
         onPress={onSpin}
         disabled={disabled}
-        style={[styles.referenceSpinHotspot, styles.referenceHotspot]}
+        style={({ pressed }) => [
+          styles.referenceSpinHotspot,
+          styles.referenceHotspot,
+          {
+            borderColor: disabled ? colors.mutedForeground + '55' : colors.gold + '55',
+            opacity: pressed ? 0.55 : 1,
+          },
+        ]}
         accessibilityRole="button"
         accessibilityLabel={disabled ? 'اللف غير متاح الآن' : 'لف العجلة'}
         testID="reference-spin-button"
@@ -404,6 +435,8 @@ export default function TabOneScreen() {
           onMenu={() => setDrawerOpen(true)}
           onSelect={setActiveTab}
           disabled={isSpinning || secondsUntilNextSpin > 0}
+          rotation={wheelRotation}
+          spinning={isSpinning}
         />
       ) : (
         <>
@@ -422,8 +455,12 @@ const styles = StyleSheet.create({
   screen: { flex: 1, overflow: 'hidden' },
   referenceFrame: { flex: 1, position: 'relative', overflow: 'hidden' },
   referenceHotspot: { position: 'absolute', zIndex: 3 },
-  referenceMenuHotspot: { left: '1%', top: '2%', width: '19%', height: '10%' },
-  referenceSpinHotspot: { left: '23%', top: '79%', width: '54%', height: '11%' },
+  referenceMotion: { position: 'absolute', zIndex: 2, left: '7%', top: '24%', width: '86%', aspectRatio: 1, borderRadius: 999 },
+  referenceMotionOrbit: { ...StyleSheet.absoluteFillObject, borderWidth: 2, borderRadius: 999 },
+  referenceMotionDot: { position: 'absolute', top: -4, left: '50%', marginLeft: -5, width: 10, height: 10, borderRadius: 5, borderWidth: 2 },
+  referenceMotionDotRight: { top: '50%', left: '100%', marginLeft: -5, marginTop: -5 },
+  referenceMenuHotspot: { left: '1%', top: '2%', width: '19%', height: '10%', borderRadius: 999, borderWidth: 1 },
+  referenceSpinHotspot: { left: '21%', top: '79%', width: '58%', height: '11%', borderRadius: 15, borderWidth: 2 },
   referenceTabHotspot: { position: 'absolute', zIndex: 4, bottom: 0, width: '25%', height: '14%' },
   glow: { position: 'absolute', width: 280, height: 280, borderRadius: 140, opacity: 0.15 },
   glowLeft: { left: -150, top: 150 },
