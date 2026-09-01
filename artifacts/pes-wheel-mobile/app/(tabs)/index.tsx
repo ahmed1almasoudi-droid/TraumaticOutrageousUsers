@@ -13,7 +13,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import Svg, { Circle, G, Path, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, G, Image as SvgImage, Path, Text as SvgText } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
 import { usePesWheel, WHEEL_OUTCOMES, type Mission, type Reward } from '@/context/PesWheelContext';
@@ -49,12 +49,13 @@ function formatCountdown(totalSeconds: number) {
 }
 
 function CoinBadge({ size = 26 }: { size?: number }) {
-  const colors = useColors();
   return (
-    <View style={[styles.coinBadge, { width: size, height: size, borderRadius: size / 2, borderColor: colors.gold }]}>
-      <View style={[styles.coinInner, { width: size * 0.48, height: size * 0.48, borderRadius: size / 2, backgroundColor: colors.gold }]} />
-      <View style={[styles.coinLine, { top: size * 0.48, backgroundColor: colors.orange }]} />
-    </View>
+    <Image
+      source={require('../../assets/images/real-coins.png')}
+      style={{ width: size * 1.42, height: size }}
+      resizeMode="contain"
+      accessibilityLabel="صورة كوينز حقيقية"
+    />
   );
 }
 
@@ -245,8 +246,14 @@ function WheelGraphic({ rotation, spinning }: { rotation: Animated.Value; spinni
                     </G>
                   ) : (
                     <G>
-                      <Circle cx={labelPoint.x - 6} cy={labelPoint.y + 12} r={6} fill={colors.goldSoft} stroke={colors.orange} strokeWidth={2} />
-                      <Circle cx={labelPoint.x + 4} cy={labelPoint.y + 15} r={6} fill={colors.gold} stroke={colors.orange} strokeWidth={2} />
+                      <SvgImage
+                        href={require('../../assets/images/real-coins.png')}
+                        x={labelPoint.x - 24}
+                        y={labelPoint.y + 1}
+                        width={48}
+                        height={34}
+                        preserveAspectRatio="xMidYMid meet"
+                      />
                     </G>
                   )}
                 </G>
@@ -414,7 +421,7 @@ function PlayersBackdrop() {
   return (
     <View pointerEvents="none" style={styles.playersBackdrop}>
       <Image
-        source={require('../../assets/images/generated-players.png')}
+        source={require('../../assets/images/game-background.jpg')}
         resizeMode="cover"
         style={styles.playersBackdropImage}
         accessible={false}
