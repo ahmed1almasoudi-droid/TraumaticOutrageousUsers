@@ -5,7 +5,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Image,
-  ImageBackground,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -313,30 +312,28 @@ function Drawer({ onClose, onSelect }: { onClose: () => void; onSelect: (tab: Ta
   );
 }
 
-function PlayersHero() {
+function PlayersBackdrop() {
   const colors = useColors();
 
   return (
-    <View style={[styles.playersHero, { borderColor: colors.violetBright + '88', shadowColor: colors.violetBright }]}>
-      <ImageBackground
-        source={require('../../assets/images/reference-home.png')}
+    <View pointerEvents="none" style={styles.playersBackdrop}>
+      <Image
+        source={require('../../assets/images/generated-players.png')}
         resizeMode="cover"
-        style={styles.playersHeroImage}
+        style={styles.playersBackdropImage}
         accessible={false}
       />
       <LinearGradient
-        pointerEvents="none"
-        colors={['transparent', colors.background + 'F5']}
-        style={styles.playersHeroFade}
+        colors={[colors.background + '22', colors.background + 'B8', colors.background + 'F8']}
+        locations={[0, 0.48, 1]}
+        style={styles.playersBackdropFade}
       />
-      <View pointerEvents="none" style={styles.playersHeroCopy}>
-        <View style={[styles.heroBadge, { backgroundColor: colors.violet + 'DD', borderColor: colors.gold + 'BB' }]}>
-          <Ionicons name="flash" size={12} color={colors.goldSoft} />
-          <Text style={[styles.heroBadgeText, { color: colors.goldSoft }]}>تحدّي اليوم</Text>
-        </View>
-        <Text style={[styles.heroPrompt, { color: colors.foreground }]}>هل أنت مستعد للفة؟</Text>
-        <Text style={[styles.heroSubline, { color: colors.goldSoft }]}>جائزة مجانية كل 24 ساعة</Text>
-      </View>
+      <LinearGradient
+        colors={[colors.violet + '44', 'transparent', colors.orange + '26']}
+        start={{ x: 0, y: 0.2 }}
+        end={{ x: 1, y: 0.8 }}
+        style={styles.playersBackdropGlow}
+      />
     </View>
   );
 }
@@ -377,10 +374,10 @@ export default function TabOneScreen() {
       <View pointerEvents="none" style={[styles.glow, styles.glowLeft, { backgroundColor: colors.violet }]} />
       <View pointerEvents="none" style={[styles.glow, styles.glowBottom, { backgroundColor: colors.orange }]} />
       <View pointerEvents="none" style={styles.stadiumLines} />
+      <PlayersBackdrop />
       <Header balance={balance} onMenu={() => setDrawerOpen(true)} />
       {activeTab === 'wheel' ? (
         <ScrollView contentContainerStyle={styles.homeContent} showsVerticalScrollIndicator={false}>
-          <PlayersHero />
           <View style={styles.homeHeading}>
             <Text style={[styles.homeKicker, { color: colors.gold }]}>مكافأة اليوم</Text>
             <Text style={[styles.homeTitle, { color: colors.goldSoft }]}>عجلة الحظ</Text>
@@ -452,14 +449,10 @@ const styles = StyleSheet.create({
   countdownLabel: { fontSize: 11 },
   countdownValue: { fontSize: 13, fontWeight: '800', fontVariant: ['tabular-nums'] },
   demoLabel: { fontSize: 9, marginTop: 13 },
-  playersHero: { width: '100%', height: 205, borderRadius: 24, borderWidth: 1, overflow: 'hidden', marginBottom: 13, shadowOpacity: 0.5, shadowRadius: 22, shadowOffset: { width: 0, height: 8 }, elevation: 7 },
-  playersHeroImage: { ...StyleSheet.absoluteFillObject },
-  playersHeroFade: { ...StyleSheet.absoluteFillObject, top: '35%' },
-  playersHeroCopy: { position: 'absolute', left: 14, right: 14, bottom: 13, alignItems: 'center' },
-  heroBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 5 },
-  heroBadgeText: { fontSize: 10, fontWeight: '900' },
-  heroPrompt: { fontSize: 18, fontWeight: '900', marginTop: 6, textShadowColor: '#000', textShadowRadius: 8 },
-  heroSubline: { fontSize: 11, fontWeight: '800', marginTop: 2 },
+  playersBackdrop: { ...StyleSheet.absoluteFillObject, top: 48, bottom: 75, zIndex: 0 },
+  playersBackdropImage: { position: 'absolute', width: '100%', height: '100%', opacity: 0.72 },
+  playersBackdropFade: { ...StyleSheet.absoluteFillObject },
+  playersBackdropGlow: { ...StyleSheet.absoluteFillObject, opacity: 0.7 },
   homeHeading: { alignItems: 'center' },
   bottomNav: { zIndex: 5, minHeight: 78, flexDirection: 'row', borderTopWidth: 1, paddingHorizontal: 8, paddingTop: 7, paddingBottom: 8 },
   bottomItem: { flex: 1, borderRadius: 13, alignItems: 'center', justifyContent: 'center', gap: 4 },

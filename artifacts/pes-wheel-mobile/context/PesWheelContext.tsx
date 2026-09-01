@@ -39,7 +39,7 @@ type PesWheelContextValue = {
   missions: Mission[];
 };
 
-const STORAGE_KEY = 'pes-wheel-local-state-v2';
+const STORAGE_KEY = 'pes-wheel-local-state-v3';
 const DAY_IN_SECONDS = 24 * 60 * 60;
 export const WHEEL_OUTCOMES = [
   { id: 'luck-better', label: 'حظ أوفر', amount: 0, probability: 100 },
@@ -84,7 +84,7 @@ function getRemainingSeconds(lastSpinAt: number | null): number {
 }
 
 export function PesWheelProvider({ children }: { children: ReactNode }) {
-  const [balance, setBalance] = useState(1250);
+  const [balance, setBalance] = useState(0);
   const [rewardHistory, setRewardHistory] = useState<Reward[]>([]);
   const [lastSpinAt, setLastSpinAt] = useState<number | null>(null);
   const [secondsUntilNextSpin, setSecondsUntilNextSpin] = useState(0);
@@ -105,7 +105,7 @@ export function PesWheelProvider({ children }: { children: ReactNode }) {
             rewardHistory?: Array<Partial<Reward>>;
             lastSpinAt?: number | null;
           };
-          setBalance(parsed.balance ?? 1250);
+          setBalance(parsed.balance ?? 0);
           setRewardHistory(
             (parsed.rewardHistory ?? []).map((reward, index) => ({
               id: reward.id ?? `legacy-${index}`,
