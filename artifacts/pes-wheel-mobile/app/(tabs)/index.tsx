@@ -37,6 +37,12 @@ const tabItems: Array<{ id: Tab; label: string; icon: keyof typeof Ionicons.glyp
   { id: 'account', label: 'حسابي', icon: 'person-outline' },
 ];
 
+const PLAYER_IMAGES: Partial<Record<string, number>> = {
+  'player-suarez': require('../../assets/images/suarez.png'),
+  'player-casillas': require('../../assets/images/casillas.png'),
+  'player-thiago': require('../../assets/images/thiago-alcantara.png'),
+};
+
 function formatNumber(value: number) {
   return new Intl.NumberFormat('en-US').format(value);
 }
@@ -233,10 +239,12 @@ function WheelGraphic({ rotation, spinning }: { rotation: Animated.Value; spinni
             {WHEEL_OUTCOMES.map((outcome, index) => {
               const start = index * segment;
               const labelPoint = polarToCartesian(center, 104, start + segment / 2);
+              const playerImage = PLAYER_IMAGES[outcome.id];
+              const labelFontSize = playerImage ? (outcome.id === 'player-thiago' ? '8' : '10') : outcome.label.length > 4 ? '11' : '15';
               return (
                 <G key={outcome.id}>
                   <Path d={describeSegment(center, radius, start, start + segment - 1)} fill={index === 0 ? colors.destructive : segmentColors[index % segmentColors.length]} stroke={colors.goldSoft + 'aa'} strokeWidth={1} />
-                  <SvgText x={labelPoint.x} y={index === 0 ? labelPoint.y - 7 : labelPoint.y - 2} fill={index === 0 ? colors.goldSoft : colors.primaryForeground} fontSize={index === 0 ? '13' : '15'} fontWeight="900" textAnchor="middle">
+                  <SvgText x={labelPoint.x} y={index === 0 ? labelPoint.y - 7 : labelPoint.y - 2} fill={index === 0 ? colors.goldSoft : colors.primaryForeground} fontSize={index === 0 ? '13' : labelFontSize} fontWeight="900" textAnchor="middle">
                     {outcome.label}
                   </SvgText>
                   {index === 0 ? (
@@ -244,6 +252,15 @@ function WheelGraphic({ rotation, spinning }: { rotation: Animated.Value; spinni
                       <Circle cx={labelPoint.x} cy={labelPoint.y + 12} r={15} fill={colors.goldSoft} stroke={colors.orange} strokeWidth={2} />
                       <SvgText x={labelPoint.x} y={labelPoint.y + 18} fill={colors.destructive} fontSize="17" fontWeight="900" textAnchor="middle">↻</SvgText>
                     </G>
+                  ) : playerImage ? (
+                    <SvgImage
+                      href={playerImage}
+                      x={labelPoint.x - 21}
+                      y={labelPoint.y + 3}
+                      width={42}
+                      height={42}
+                      preserveAspectRatio="xMidYMid meet"
+                    />
                   ) : (
                     <G>
                       <SvgImage

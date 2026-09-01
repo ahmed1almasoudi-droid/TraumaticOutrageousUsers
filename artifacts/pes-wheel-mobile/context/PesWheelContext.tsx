@@ -52,6 +52,9 @@ export const WHEEL_OUTCOMES = [
   { id: 'coins-3250', label: '3250', amount: 3250, probability: 0 },
   { id: 'coins-5700', label: '5700', amount: 5700, probability: 0 },
   { id: 'coins-12800', label: '12800', amount: 12800, probability: 0 },
+  { id: 'player-suarez', label: 'سواريز', amount: 0, probability: 0 },
+  { id: 'player-casillas', label: 'كاسياس', amount: 0, probability: 0 },
+  { id: 'player-thiago', label: 'تياكو الكانتارا', amount: 0, probability: 0 },
 ] as const;
 
 const initialMissions: Mission[] = [
