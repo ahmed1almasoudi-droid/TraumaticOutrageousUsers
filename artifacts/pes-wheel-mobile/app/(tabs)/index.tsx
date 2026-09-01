@@ -238,8 +238,7 @@ function WheelGraphic({ rotation, spinning }: { rotation: Animated.Value; spinni
           <G>
             {WHEEL_OUTCOMES.map((outcome, index) => {
               const start = index * segment;
-              const middleAngle = start + segment / 2;
-              const labelPoint = polarToCartesian(center, 104, middleAngle);
+              const labelPoint = polarToCartesian(center, 104, start + segment / 2);
               const playerImage = PLAYER_IMAGES[outcome.id];
               const labelFontSize = playerImage
                 ? outcome.id === 'player-thiago' ? '5.5' : '7.5'
@@ -248,7 +247,7 @@ function WheelGraphic({ rotation, spinning }: { rotation: Animated.Value; spinni
                 <G key={outcome.id}>
                   <Path d={describeSegment(center, radius, start, start + segment - 1)} fill={index === 0 ? colors.destructive : segmentColors[index % segmentColors.length]} stroke={colors.goldSoft + 'aa'} strokeWidth={1} />
                   {index === 0 ? (
-                    <G transform={`rotate(${middleAngle} ${labelPoint.x} ${labelPoint.y})`}>
+                    <G>
                       <SvgText x={labelPoint.x} y={labelPoint.y + 4} fill={colors.goldSoft} fontSize="11" fontWeight="900" textAnchor="middle">
                         {outcome.label}
                       </SvgText>
@@ -256,7 +255,7 @@ function WheelGraphic({ rotation, spinning }: { rotation: Animated.Value; spinni
                       <SvgText x={labelPoint.x} y={labelPoint.y + 23} fill={colors.destructive} fontSize="13" fontWeight="900" textAnchor="middle">↻</SvgText>
                     </G>
                   ) : (
-                    <G transform={`rotate(${middleAngle} ${labelPoint.x} ${labelPoint.y})`}>
+                    <G>
                       {playerImage ? (
                         <SvgImage
                           href={playerImage}
