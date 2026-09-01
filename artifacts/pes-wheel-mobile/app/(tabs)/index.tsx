@@ -213,7 +213,12 @@ function BottomNav({ active, onChange }: { active: Tab; onChange: (tab: Tab) => 
 function ResultCard({ reward, onClose }: { reward: Reward; onClose: () => void }) {
   const colors = useColors();
   return (
-    <View style={[styles.resultCard, { backgroundColor: colors.panelRaised, borderColor: colors.gold + '88' }]} accessibilityLiveRegion="polite">
+    <View
+      style={[styles.resultCard, { backgroundColor: colors.panelRaised, borderColor: colors.gold + '88' }]}
+      accessibilityLabel={reward.amount > 0 ? `${reward.label} كوينز` : 'حظ أوفر، بدون كوينز أو خصم'}
+      accessibilityLiveRegion="polite"
+      testID="spin-result"
+    >
       <View style={[styles.resultIcon, { backgroundColor: colors.gold + '1F' }]}><Ionicons name="trophy-outline" size={25} color={colors.gold} /></View>
       <View style={styles.resultCopy}>
         <Text style={[styles.resultCaption, { color: colors.mutedForeground }]}>{reward.amount > 0 ? 'مبروك! ربحت' : 'هذه المرة'}</Text>
@@ -244,7 +249,7 @@ function RewardsView({ history }: { history: Reward[] }) {
       {history.length === 0 ? <EmptyState icon="gift-outline" title="ما عندك جوائز بعد" body="لفّ العجلة اليوم حتى تظهر أول جائزة هنا." colors={colors} /> : history.map((reward) => (
         <View key={reward.id} style={[styles.historyRow, { backgroundColor: colors.card, borderColor: colors.border + '55' }]}>
           <View style={[styles.historyIcon, { backgroundColor: reward.amount > 0 ? colors.gold + '1C' : colors.destructive + '1C' }]}>{reward.amount > 0 ? <CoinBadge size={24} /> : <Ionicons name="refresh-outline" size={24} color={colors.destructive} />}</View>
-          <View style={styles.historyCopy}><Text style={[styles.historyTitle, { color: colors.goldSoft }]}>{reward.label}</Text><Text style={[styles.historyDate, { color: colors.mutedForeground }]}>{reward.amount > 0 ? 'جائزة اللفة اليومية' : 'حظ أوفر — بدون خصم'}</Text></View>
+          <View style={styles.historyCopy}><Text style={[styles.historyTitle, { color: colors.goldSoft }]}>{reward.label}</Text><Text style={[styles.historyDate, { color: colors.mutedForeground }]}>{reward.amount > 0 ? 'جائزة اللفة اليومية' : 'حظ أوفر — بدون كوينز أو خصم'}</Text></View>
           <Ionicons name="checkmark-circle" size={20} color={colors.green} />
         </View>
       ))}

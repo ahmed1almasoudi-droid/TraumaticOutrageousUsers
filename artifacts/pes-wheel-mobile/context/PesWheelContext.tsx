@@ -5,6 +5,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -89,6 +90,8 @@ export function PesWheelProvider({ children }: { children: ReactNode }) {
   const [secondsUntilNextSpin, setSecondsUntilNextSpin] = useState(0);
   const [isReady, setIsReady] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
+  const lastSpinAtRef = useRef<number | null>(null);
+  const spinLockRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
@@ -120,8 +123,10 @@ export function PesWheelProvider({ children }: { children: ReactNode }) {
               createdAt: reward.createdAt ?? Date.now(),
             })),
           );
-          setLastSpinAt(parsed.lastSpinAt ?? null);
-          setSecondsUntilNextSpin(getRemainingSeconds(parsed.lastSpinAt ?? null));
+          const restoredLastSpinAt = parsed.lastSpinAt ?? null;
+          lastSpinAtRef.current = restoredLastSpinAt;
+          setLastSpinAt(restoredLastSpinAt);
+          setSecondsUntilNextSpin(getRemainingSeconds(restoredLastSpinAt));
         }
       } catch {
         // A fresh local session is a safe fallback for a corrupted preview cache.
@@ -153,7 +158,14 @@ export function PesWheelProvider({ children }: { children: ReactNode }) {
   }, [balance, isReady, lastSpinAt, rewardHistory]);
 
   const spin = useCallback(async () => {
-    if (!isReady || isSpinning || secondsUntilNextSpin > 0) return null;
+    if (
+      !isReady ||
+      spinLockRef.current ||
+      getRemainingSeconds(lastSpinAtRef.current) > 0
+    ) {
+      return null;
+    }
+    spinLockRef.current = true;
     setIsSpinning(true);
 
     // Preview configuration: luck-better owns 100% of the probability budget.
@@ -171,6 +183,7 @@ export function PesWheelProvider({ children }: { children: ReactNode }) {
     const nextHistory = [reward, ...rewardHistory].slice(0, 20);
     const now = Date.now();
 
+    lastSpinAtRef.current = now;
     if (selectedOutcome.amount > 0) {
       setBalance((current) => current + selectedOutcome.amount);
     }
@@ -178,10 +191,14 @@ export function PesWheelProvider({ children }: { children: ReactNode }) {
     setLastSpinAt(now);
     setSecondsUntilNextSpin(DAY_IN_SECONDS);
 
-    await new Promise((resolve) => setTimeout(resolve, 1150));
-    setIsSpinning(false);
-    return reward;
-  }, [isReady, isSpinning, rewardHistory, secondsUntilNextSpin]);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1150));
+      return reward;
+    } finally {
+      spinLockRef.current = false;
+      setIsSpinning(false);
+    }
+  }, [isReady, rewardHistory]);
 
   const missions = useMemo(() => {
     const firstSpinProgress = rewardHistory.length > 0 ? 1 : 0;
