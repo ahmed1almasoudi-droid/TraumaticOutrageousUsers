@@ -238,39 +238,47 @@ function WheelGraphic({ rotation, spinning }: { rotation: Animated.Value; spinni
           <G>
             {WHEEL_OUTCOMES.map((outcome, index) => {
               const start = index * segment;
-              const labelPoint = polarToCartesian(center, 104, start + segment / 2);
+              const middleAngle = start + segment / 2;
+              const labelPoint = polarToCartesian(center, 104, middleAngle);
               const playerImage = PLAYER_IMAGES[outcome.id];
-              const labelFontSize = playerImage ? (outcome.id === 'player-thiago' ? '8' : '10') : outcome.label.length > 4 ? '11' : '15';
+              const labelFontSize = playerImage
+                ? outcome.id === 'player-thiago' ? '5.5' : '7.5'
+                : outcome.label.length > 4 ? '10' : '13';
               return (
                 <G key={outcome.id}>
                   <Path d={describeSegment(center, radius, start, start + segment - 1)} fill={index === 0 ? colors.destructive : segmentColors[index % segmentColors.length]} stroke={colors.goldSoft + 'aa'} strokeWidth={1} />
-                  <SvgText x={labelPoint.x} y={index === 0 ? labelPoint.y - 7 : labelPoint.y - 2} fill={index === 0 ? colors.goldSoft : colors.primaryForeground} fontSize={index === 0 ? '13' : labelFontSize} fontWeight="900" textAnchor="middle">
-                    {outcome.label}
-                  </SvgText>
                   {index === 0 ? (
-                    <G>
-                      <Circle cx={labelPoint.x} cy={labelPoint.y + 12} r={15} fill={colors.goldSoft} stroke={colors.orange} strokeWidth={2} />
-                      <SvgText x={labelPoint.x} y={labelPoint.y + 18} fill={colors.destructive} fontSize="17" fontWeight="900" textAnchor="middle">↻</SvgText>
+                    <G transform={`rotate(${middleAngle} ${labelPoint.x} ${labelPoint.y})`}>
+                      <SvgText x={labelPoint.x} y={labelPoint.y + 4} fill={colors.goldSoft} fontSize="11" fontWeight="900" textAnchor="middle">
+                        {outcome.label}
+                      </SvgText>
+                      <Circle cx={labelPoint.x} cy={labelPoint.y + 18} r={11} fill={colors.goldSoft} stroke={colors.orange} strokeWidth={2} />
+                      <SvgText x={labelPoint.x} y={labelPoint.y + 23} fill={colors.destructive} fontSize="13" fontWeight="900" textAnchor="middle">↻</SvgText>
                     </G>
-                  ) : playerImage ? (
-                    <SvgImage
-                      href={playerImage}
-                      x={labelPoint.x - 21}
-                      y={labelPoint.y + 3}
-                      width={42}
-                      height={42}
-                      preserveAspectRatio="xMidYMid meet"
-                    />
                   ) : (
-                    <G>
-                      <SvgImage
-                        href={require('../../assets/images/real-coins.png')}
-                        x={labelPoint.x - 24}
-                        y={labelPoint.y + 1}
-                        width={48}
-                        height={34}
-                        preserveAspectRatio="xMidYMid meet"
-                      />
+                    <G transform={`rotate(${middleAngle} ${labelPoint.x} ${labelPoint.y})`}>
+                      {playerImage ? (
+                        <SvgImage
+                          href={playerImage}
+                          x={labelPoint.x - 28}
+                          y={labelPoint.y - 10}
+                          width={20}
+                          height={22}
+                          preserveAspectRatio="xMidYMid meet"
+                        />
+                      ) : (
+                        <SvgImage
+                          href={require('../../assets/images/real-coins.png')}
+                          x={labelPoint.x - 25}
+                          y={labelPoint.y - 9}
+                          width={18}
+                          height={18}
+                          preserveAspectRatio="xMidYMid meet"
+                        />
+                      )}
+                      <SvgText x={labelPoint.x + 10} y={labelPoint.y + 4} fill={colors.primaryForeground} fontSize={labelFontSize} fontWeight="900" textAnchor="middle">
+                        {outcome.label}
+                      </SvgText>
                     </G>
                   )}
                 </G>
