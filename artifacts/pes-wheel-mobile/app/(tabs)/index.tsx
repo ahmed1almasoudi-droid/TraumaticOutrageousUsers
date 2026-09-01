@@ -1,10 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Image,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -17,6 +19,16 @@ import { useColors } from '@/hooks/useColors';
 import { usePesWheel, WHEEL_OUTCOMES, type Mission, type Reward } from '@/context/PesWheelContext';
 
 type Tab = 'wheel' | 'prizes' | 'missions' | 'account';
+type Channel = { id: string; label: string; url: string };
+
+const CHANNELS: Channel[] = [
+  { id: 'm-gg-5', label: 'القناة الأولى', url: 'https://t.me/m_gg_5' },
+  { id: 'p11in', label: 'القناة الثانية', url: 'https://t.me/P11In' },
+  { id: 'xxcnxxu', label: 'القناة الثالثة', url: 'https://t.me/xxcnxxu' },
+  { id: 'ssxeex', label: 'القناة الرابعة', url: 'https://t.me/ssxeex' },
+];
+
+const CHANNEL_GATE_STORAGE_KEY = 'pes-wheel-channel-gate-v1';
 
 const tabItems: Array<{ id: Tab; label: string; icon: keyof typeof Ionicons.glyphMap }> = [
   { id: 'wheel', label: 'العجلة', icon: 'disc-outline' },
@@ -101,6 +113,90 @@ function Welcome({ onEnter }: { onEnter: () => void }) {
         </Pressable>
         <Text style={[styles.footnote, { color: colors.mutedForeground }]}>لفّة مجانية كل 24 ساعة</Text>
       </View>
+    </View>
+  );
+}
+
+function SubscriptionGate({
+  completed,
+  onJoin,
+  onContinue,
+}: {
+  completed: Record<string, boolean>;
+  onJoin: (channel: Channel) => void;
+  onContinue: () => void;
+}) {
+  const colors = useColors();
+  const insets = useSafeAreaInsets();
+  const allComplete = CHANNELS.every((channel) => completed[channel.id]);
+
+  return (
+    <View style={[styles.screen, { backgroundColor: colors.background, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 14 }]} accessible accessibilityLabel="شاشة الاشتراك بالقنوات">
+      <View pointerEvents="none" style={[styles.glow, styles.glowLeft, { backgroundColor: colors.violet }]} />
+      <View pointerEvents="none" style={[styles.glow, styles.glowBottom, { backgroundColor: colors.orange }]} />
+      <View pointerEvents="none" style={styles.stadiumLines} />
+      <ScrollView contentContainerStyle={styles.gateContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.gateBrand}>
+          <View style={[styles.gateLogo, { backgroundColor: colors.plum, borderColor: colors.gold + '99' }]}>
+            <Image source={require('../../assets/images/icon_2.png')} style={styles.gateLogoImage} />
+          </View>
+          <View style={[styles.gatePreview, { backgroundColor: colors.violet + '55', borderColor: colors.violetBright + '88' }]}>
+            <Ionicons name="shield-checkmark-outline" size={13} color={colors.goldSoft} />
+            <Text style={[styles.gatePreviewText, { color: colors.goldSoft }]}>دخول مجاني</Text>
+          </View>
+        </View>
+
+        <Text style={[styles.gateEyebrow, { color: colors.gold }]}>قبل بداية اللعب</Text>
+        <Text style={[styles.gateTitle, { color: colors.foreground }]}>اشترك بالقنوات{'\n'}وافتح العجلة</Text>
+        <Text style={[styles.gateSubtitle, { color: colors.mutedForeground }]}>عليك الاشتراك بالقنوات التالية لاستخدام التطبيق</Text>
+
+        <View style={[styles.gateNotice, { backgroundColor: colors.violet + '2A', borderColor: colors.violetBright + '66' }]}>
+          <Ionicons name="megaphone-outline" size={20} color={colors.gold} />
+          <Text style={[styles.gateNoticeText, { color: colors.foreground }]}>ادعمنا واشترك بالقنوات حتى نكمل لك تجربة الجوائز اليومية.</Text>
+        </View>
+
+        <View style={styles.channelList}>
+          {CHANNELS.map((channel, index) => {
+            const isComplete = Boolean(completed[channel.id]);
+            return (
+              <View key={channel.id} style={[styles.channelCard, { backgroundColor: colors.card + 'F2', borderColor: isComplete ? colors.green + 'AA' : colors.border + '66' }]}>
+                <View style={[styles.channelNumber, { backgroundColor: isComplete ? colors.green + '22' : colors.violet + '44' }]}>
+                  {isComplete ? <Ionicons name="checkmark" size={18} color={colors.green} /> : <Text style={[styles.channelNumberText, { color: colors.goldSoft }]}>{index + 1}</Text>}
+                </View>
+                <View style={styles.channelCopy}>
+                  <Text style={[styles.channelLabel, { color: colors.foreground }]}>{channel.label}</Text>
+                  <Text style={[styles.channelUrl, { color: colors.mutedForeground }]}>{channel.url.replace('https://', '')}</Text>
+                </View>
+                <Pressable
+                  onPress={() => onJoin(channel)}
+                  accessibilityRole="button"
+                  accessibilityLabel={isComplete ? `تم الاشتراك في ${channel.label}` : `الاشتراك في ${channel.label}`}
+                  testID={`channel-join-${channel.id}`}
+                  style={({ pressed }) => [styles.channelButton, { backgroundColor: isComplete ? colors.green : colors.violet, borderColor: isComplete ? colors.green : colors.violetBright, opacity: pressed ? 0.78 : 1 }]}
+                >
+                  <Ionicons name={isComplete ? 'checkmark-circle' : 'paper-plane-outline'} size={17} color={isComplete ? '#062b1d' : colors.foreground} />
+                  <Text style={[styles.channelButtonText, { color: isComplete ? '#062b1d' : colors.foreground }]}>{isComplete ? 'تم الاشتراك' : 'اشترك الآن'}</Text>
+                </Pressable>
+              </View>
+            );
+          })}
+        </View>
+
+        <Pressable
+          onPress={onContinue}
+          disabled={!allComplete}
+          accessibilityRole="button"
+          accessibilityLabel={allComplete ? 'المتابعة إلى التطبيق' : 'اشترك بالقنوات أولاً'}
+          testID="continue-after-channels"
+          style={({ pressed }) => [styles.gateContinue, { opacity: pressed ? 0.85 : 1 }, !allComplete && styles.gateContinueDisabled]}
+        >
+          <LinearGradient colors={allComplete ? [colors.gold, colors.goldSoft, colors.orange] : [colors.secondary, colors.muted]} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={styles.gateContinueGradient}>
+            <Text style={[styles.gateContinueText, { color: allComplete ? colors.primaryForeground : colors.mutedForeground }]}>{allComplete ? 'متابعة إلى التطبيق' : 'اشترك بالقنوات للمتابعة'}</Text>
+            <Ionicons name={allComplete ? 'arrow-back' : 'lock-closed-outline'} size={20} color={allComplete ? colors.primaryForeground : colors.mutedForeground} />
+          </LinearGradient>
+        </Pressable>
+        <Text style={[styles.gateFootnote, { color: colors.mutedForeground }]}>سيتم فتح الرابط مباشرة، ولا يوجد تحقق من الاشتراك حالياً.</Text>
+      </ScrollView>
     </View>
   );
 }
@@ -341,12 +437,49 @@ function PlayersBackdrop() {
 export default function TabOneScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const [channelGateReady, setChannelGateReady] = useState(false);
+  const [channelGateDone, setChannelGateDone] = useState(false);
+  const [completedChannels, setCompletedChannels] = useState<Record<string, boolean>>({});
   const [welcome, setWelcome] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('wheel');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [result, setResult] = useState<Reward | null>(null);
   const wheelRotation = useRef(new Animated.Value(0)).current;
   const { balance, rewardHistory, missions, isReady, isSpinning, spin, secondsUntilNextSpin } = usePesWheel();
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function restoreChannelGate() {
+      try {
+        const saved = await AsyncStorage.getItem(CHANNEL_GATE_STORAGE_KEY);
+        if (!mounted || !saved) return;
+        const parsed = JSON.parse(saved) as {
+          completedChannels?: Record<string, boolean>;
+          channelGateDone?: boolean;
+        };
+        setCompletedChannels(parsed.completedChannels ?? {});
+        setChannelGateDone(parsed.channelGateDone ?? false);
+      } catch {
+        // A missing or malformed local gate starts fresh without blocking the app.
+      } finally {
+        if (mounted) setChannelGateReady(true);
+      }
+    }
+
+    void restoreChannelGate();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!channelGateReady) return;
+    void AsyncStorage.setItem(
+      CHANNEL_GATE_STORAGE_KEY,
+      JSON.stringify({ completedChannels, channelGateDone }),
+    );
+  }, [channelGateDone, channelGateReady, completedChannels]);
 
   useEffect(() => {
     const timer = setTimeout(() => setWelcome(false), 3200);
@@ -365,6 +498,30 @@ export default function TabOneScreen() {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setResult(reward);
     }
+  }
+
+  function handleChannelJoin(channel: Channel) {
+    setCompletedChannels((current) => ({ ...current, [channel.id]: true }));
+    void Linking.openURL(channel.url);
+  }
+
+  if (!channelGateReady) {
+    return (
+      <View style={[styles.screen, { backgroundColor: colors.background, paddingTop: insets.top + 20, alignItems: 'center', justifyContent: 'center' }]}>
+        <Image source={require('../../assets/images/icon_2.png')} style={styles.gateLoadingLogo} />
+        <Text style={[styles.gateLoadingText, { color: colors.mutedForeground }]}>جاري تجهيز الدخول...</Text>
+      </View>
+    );
+  }
+
+  if (!channelGateDone) {
+    return (
+      <SubscriptionGate
+        completed={completedChannels}
+        onJoin={handleChannelJoin}
+        onContinue={() => setChannelGateDone(true)}
+      />
+    );
   }
 
   if (welcome) return <Welcome onEnter={() => setWelcome(false)} />;
@@ -419,6 +576,33 @@ const styles = StyleSheet.create({
   welcomeTitle: { fontSize: 43, fontWeight: '900', letterSpacing: -1, marginBottom: 14 },
   welcomeSubtitle: { textAlign: 'center', fontSize: 16, lineHeight: 30 },
   welcomeBottom: { paddingHorizontal: 24 },
+  gateContent: { paddingHorizontal: 18, paddingTop: 8, paddingBottom: 20 },
+  gateBrand: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
+  gateLogo: { width: 64, height: 64, borderRadius: 20, borderWidth: 1, alignItems: 'center', justifyContent: 'center', shadowColor: '#9a4eff', shadowOpacity: 0.35, shadowRadius: 18, shadowOffset: { width: 0, height: 5 }, elevation: 7 },
+  gateLogoImage: { width: 50, height: 50, borderRadius: 16 },
+  gatePreview: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7 },
+  gatePreviewText: { fontSize: 10, fontWeight: '800' },
+  gateEyebrow: { textAlign: 'right', fontSize: 11, fontWeight: '900', marginBottom: 7 },
+  gateTitle: { textAlign: 'right', fontSize: 31, lineHeight: 39, fontWeight: '900', letterSpacing: -0.4 },
+  gateSubtitle: { textAlign: 'right', fontSize: 13, lineHeight: 21, marginTop: 9, marginBottom: 18 },
+  gateNotice: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 18, paddingHorizontal: 13, paddingVertical: 12, marginBottom: 14 },
+  gateNoticeText: { flex: 1, textAlign: 'right', fontSize: 11, lineHeight: 18, fontWeight: '700' },
+  channelList: { gap: 9 },
+  channelCard: { minHeight: 70, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 18, padding: 9 },
+  channelNumber: { width: 35, height: 35, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  channelNumberText: { fontSize: 14, fontWeight: '900' },
+  channelCopy: { flex: 1, marginHorizontal: 9 },
+  channelLabel: { textAlign: 'right', fontSize: 13, fontWeight: '900' },
+  channelUrl: { textAlign: 'right', fontSize: 10, marginTop: 3 },
+  channelButton: { minWidth: 102, minHeight: 42, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, borderWidth: 1, borderRadius: 13, paddingHorizontal: 8 },
+  channelButtonText: { fontSize: 10, fontWeight: '900' },
+  gateContinue: { overflow: 'hidden', borderRadius: 17, borderWidth: 1, borderColor: '#ffe274', marginTop: 18, shadowColor: '#e39e26', shadowOpacity: 0.28, shadowRadius: 15, shadowOffset: { width: 0, height: 7 }, elevation: 5 },
+  gateContinueDisabled: { borderColor: '#655773', shadowOpacity: 0 },
+  gateContinueGradient: { minHeight: 58, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 18 },
+  gateContinueText: { fontSize: 16, fontWeight: '900' },
+  gateFootnote: { textAlign: 'center', fontSize: 10, lineHeight: 16, marginTop: 10 },
+  gateLoadingLogo: { width: 70, height: 70, borderRadius: 20, marginBottom: 14 },
+  gateLoadingText: { fontSize: 12, fontWeight: '700' },
   primaryButton: { width: '100%', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#ffe274', shadowColor: '#e39e26', shadowOpacity: 0.26, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 5 },
   primaryButtonGradient: { minHeight: 58, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, paddingHorizontal: 20 },
   primaryButtonText: { fontSize: 17, fontWeight: '900' },
