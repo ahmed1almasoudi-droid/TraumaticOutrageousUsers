@@ -5,6 +5,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Image,
+  ImageBackground,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -307,6 +308,55 @@ function Drawer({ onClose, onSelect }: { onClose: () => void; onSelect: (tab: Ta
   );
 }
 
+function ReferenceWheelView({
+  onSpin,
+  onMenu,
+  onSelect,
+  disabled,
+}: {
+  onSpin: () => void;
+  onMenu: () => void;
+  onSelect: (tab: Tab) => void;
+  disabled: boolean;
+}) {
+  return (
+    <View style={styles.referenceFrame} testID="reference-wheel-screen">
+      <ImageBackground
+        source={require('../../assets/images/reference-home.png')}
+        resizeMode="cover"
+        style={StyleSheet.absoluteFill}
+        accessible
+        accessibilityLabel="تصميم عجلة الحظ المرجعي"
+      />
+      <Pressable
+        onPress={onMenu}
+        style={[styles.referenceMenuHotspot, styles.referenceHotspot]}
+        accessibilityRole="button"
+        accessibilityLabel="فتح القائمة"
+        testID="reference-menu-button"
+      />
+      <Pressable
+        onPress={onSpin}
+        disabled={disabled}
+        style={[styles.referenceSpinHotspot, styles.referenceHotspot]}
+        accessibilityRole="button"
+        accessibilityLabel={disabled ? 'اللف غير متاح الآن' : 'لف العجلة'}
+        testID="reference-spin-button"
+      />
+      {tabItems.map((item, index) => (
+        <Pressable
+          key={item.id}
+          onPress={() => onSelect(item.id)}
+          style={[styles.referenceTabHotspot, { left: `${index * 25}%` }]}
+          accessibilityRole="button"
+          accessibilityLabel={item.label}
+          testID={`reference-tab-${item.id}`}
+        />
+      ))}
+    </View>
+  );
+}
+
 export default function TabOneScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -343,24 +393,20 @@ export default function TabOneScreen() {
       <View pointerEvents="none" style={[styles.glow, styles.glowLeft, { backgroundColor: colors.violet }]} />
       <View pointerEvents="none" style={[styles.glow, styles.glowBottom, { backgroundColor: colors.orange }]} />
       <View pointerEvents="none" style={styles.stadiumLines} />
-      <Header balance={balance} onMenu={() => setDrawerOpen(true)} />
       {activeTab === 'wheel' ? (
-        <ScrollView contentContainerStyle={styles.homeContent} showsVerticalScrollIndicator={false}>
-          <Text style={[styles.homeKicker, { color: colors.gold }]}>مكافأة اليوم</Text>
-          <Text style={[styles.homeTitle, { color: colors.goldSoft }]}>عجلة الحظ</Text>
-          <Text style={[styles.homeSubtitle, { color: colors.mutedForeground }]}>لفّ واربح عملاتك المجانية</Text>
-          <WheelGraphic rotation={wheelRotation} spinning={isSpinning} />
-          <Pressable onPress={handleSpin} disabled={isSpinning || secondsUntilNextSpin > 0} accessibilityRole="button" accessibilityLabel={isSpinning ? 'العجلة تدور' : secondsUntilNextSpin > 0 ? 'اللف غير متاح الآن' : 'لف العجلة'} testID="spin-button" style={({ pressed }) => [styles.primaryButton, { opacity: pressed ? 0.86 : 1 }, (isSpinning || secondsUntilNextSpin > 0) && styles.disabledButton]}>
-            <LinearGradient colors={isSpinning || secondsUntilNextSpin > 0 ? [colors.secondary, colors.muted] : [colors.gold, colors.goldSoft, colors.orange]} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={styles.primaryButtonGradient}>
-              <Ionicons name={isSpinning ? 'sync-outline' : 'gift-outline'} size={20} color={isSpinning || secondsUntilNextSpin > 0 ? colors.mutedForeground : colors.primaryForeground} />
-              <Text style={[styles.primaryButtonText, { color: isSpinning || secondsUntilNextSpin > 0 ? colors.mutedForeground : colors.primaryForeground }]}>{isSpinning ? 'جاري الدوران...' : secondsUntilNextSpin > 0 ? 'عد غداً للمحاولة' : 'لف العجلة'}</Text>
-            </LinearGradient>
-          </Pressable>
-          <View style={styles.countdownRow}><Ionicons name="time-outline" size={15} color={colors.gold} /><Text style={[styles.countdownLabel, { color: colors.mutedForeground }]}>{secondsUntilNextSpin > 0 ? 'اللفة التالية بعد' : 'لفّة مجانية متاحة الآن'}</Text>{secondsUntilNextSpin > 0 && <Text style={[styles.countdownValue, { color: colors.goldSoft }]}>{countdownText}</Text>}</View>
-          <Text style={[styles.demoLabel, { color: colors.mutedForeground }]}><Ionicons name="shield-checkmark-outline" size={12} color={colors.violetBright} /> وضع معاينة — الجوائز تجريبية</Text>
-        </ScrollView>
-      ) : activeTab === 'prizes' ? <RewardsView history={rewardHistory} /> : activeTab === 'missions' ? <MissionsView missions={missions} /> : <AccountView balance={balance} />}
-      <BottomNav active={activeTab} onChange={setActiveTab} />
+        <ReferenceWheelView
+          onSpin={handleSpin}
+          onMenu={() => setDrawerOpen(true)}
+          onSelect={setActiveTab}
+          disabled={isSpinning || secondsUntilNextSpin > 0}
+        />
+      ) : (
+        <>
+          <Header balance={balance} onMenu={() => setDrawerOpen(true)} />
+          {activeTab === 'prizes' ? <RewardsView history={rewardHistory} /> : activeTab === 'missions' ? <MissionsView missions={missions} /> : <AccountView balance={balance} />}
+          <BottomNav active={activeTab} onChange={setActiveTab} />
+        </>
+      )}
       {result && <View style={styles.resultPosition}><ResultCard reward={result} onClose={() => setResult(null)} /></View>}
       {drawerOpen && <Drawer onClose={() => setDrawerOpen(false)} onSelect={setActiveTab} />}
     </View>
@@ -369,6 +415,11 @@ export default function TabOneScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, overflow: 'hidden' },
+  referenceFrame: { flex: 1, position: 'relative', overflow: 'hidden' },
+  referenceHotspot: { position: 'absolute', zIndex: 3 },
+  referenceMenuHotspot: { left: '1%', top: '2%', width: '19%', height: '10%' },
+  referenceSpinHotspot: { left: '23%', top: '79%', width: '54%', height: '11%' },
+  referenceTabHotspot: { position: 'absolute', zIndex: 4, bottom: 0, width: '25%', height: '14%' },
   glow: { position: 'absolute', width: 280, height: 280, borderRadius: 140, opacity: 0.15 },
   glowLeft: { left: -150, top: 150 },
   glowBottom: { right: -160, bottom: 70 },
