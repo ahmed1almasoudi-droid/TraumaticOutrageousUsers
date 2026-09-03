@@ -14,3 +14,17 @@ mtime_ms = 1788421596230
 storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:96e20551-c980-45cc-9e9a-08db83e26591/0292236b-0f89-42de-b730-525f8f6a808f/7c15c6e9-d4d6-4655-9657-6606f1ac3ef8"
 storage_version_token = "1788421607035076"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "fMVMsaUx54GceiztYg8-h"
+uri = "file://artifacts/pes-wheel-mobile/credentials/pes-wheel-upload-new.jks"
+type = "unspecified"
+title = "PES WHEEL Android Keystore — New Password"
+description = "ملف توقيع Android جديد. استخدمه بدل الملف السابق، ثم أدخل الباسوورد الجديد الذي اخترته في النموذج الآمن. الـalias: pes-wheel-upload. احتفظ به بشكل خاص."
+logical_id = "c2a7c52e-8870-465a-b76c-29c943197b53"
+content_hash = "sha256:82f34252cd9e48588c086c1c01021b2a7dd61123e7d6ca9c9eab42af7697f79c"
+size = 2246
+mtime_ms = 1788422417883
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:96e20551-c980-45cc-9e9a-08db83e26591/c2a7c52e-8870-465a-b76c-29c943197b53/1fda9f22-4511-45fa-93e5-1e1a54b581c5"
+storage_version_token = "1788422425617448"
+content_type = "application/octet-stream"
