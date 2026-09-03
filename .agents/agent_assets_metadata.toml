@@ -28,3 +28,17 @@ mtime_ms = 1788422417883
 storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:96e20551-c980-45cc-9e9a-08db83e26591/c2a7c52e-8870-465a-b76c-29c943197b53/1fda9f22-4511-45fa-93e5-1e1a54b581c5"
 storage_version_token = "1788422425617448"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "mDdhwo45NMvI2pyx_nRsw"
+uri = "file://artifacts/pes-wheel-mobile/credentials/pes-wheel-upload-new.p12"
+type = "unspecified"
+title = "PES WHEEL Android Keystore — P12"
+description = "نسخة P12 بديلة لرفع بيانات توقيع Android. استخدمها إذا لم يقبل Expo ملف JKS. الـalias: pes-wheel-upload، وكلمات المرور هي الجديدة التي اخترتها عبر النموذج الآمن. احتفظ بها بشكل خاص."
+logical_id = "f1ad1f20-7a0d-41a4-a5b1-ea258cfce5df"
+content_hash = "sha256:af1e195cd18b63552739fafdad91de59e045811e8500507a2525a1902fcf19aa"
+size = 2764
+mtime_ms = 1788422785990
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:96e20551-c980-45cc-9e9a-08db83e26591/f1ad1f20-7a0d-41a4-a5b1-ea258cfce5df/d31f8574-2c89-40f5-960c-818a533de73d"
+storage_version_token = "1788422795238878"
+content_type = "application/octet-stream"
