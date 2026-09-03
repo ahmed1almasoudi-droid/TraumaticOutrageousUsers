@@ -1,0 +1,1 @@
+- [Expo cloud builds](expo-github-pnpm.md) — EAS GitHub builders may require an older pnpm lockfile format than the Replit workspace.
