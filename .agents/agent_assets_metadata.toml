@@ -42,3 +42,17 @@ mtime_ms = 1788422785990
 storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:96e20551-c980-45cc-9e9a-08db83e26591/f1ad1f20-7a0d-41a4-a5b1-ea258cfce5df/d31f8574-2c89-40f5-960c-818a533de73d"
 storage_version_token = "1788422795238878"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "K3MhMIfYKoVnHHe6uXhGe"
+uri = "file://artifacts/pes-wheel-mobile/credentials/keystore.jks"
+type = "unspecified"
+title = "PES WHEEL Android Keystore — Simple JKS"
+description = "ملف JKS جديد باسم بسيط لرفع Android credentials. الـalias: pes-wheel-upload، واستخدم كلمات المرور الجديدة التي اخترتها عبر النموذج الآمن. إذا بقي الحقل فارغاً على الهاتف، فعّل Desktop site في Chrome ثم اختر الملف من Downloads."
+logical_id = "0b1fd2c1-ad44-4c08-9028-06a6da5b3977"
+content_hash = "sha256:82f34252cd9e48588c086c1c01021b2a7dd61123e7d6ca9c9eab42af7697f79c"
+size = 2246
+mtime_ms = 1788423078918
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:96e20551-c980-45cc-9e9a-08db83e26591/0b1fd2c1-ad44-4c08-9028-06a6da5b3977/21217bd8-b998-4281-abf7-297da69e7eb0"
+storage_version_token = "1788423106360334"
+content_type = "application/octet-stream"
