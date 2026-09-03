@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "DqY3sTaW5ZqPcZxurWmpc"
+uri = "file://artifacts/pes-wheel-mobile/credentials/pes-wheel-upload.jks"
+type = "unspecified"
+title = "PES WHEEL Android Keystore"
+description = "ملف توقيع Android خاص بتطبيق PES WHEEL. نزّله ثم ارفعه في Expo داخل Android keystore file. احتفظ به بشكل خاص ولا ترفعه إلى GitHub أو تشاركه."
+logical_id = "0292236b-0f89-42de-b730-525f8f6a808f"
+content_hash = "sha256:cdb145f676a9009f620931fd42a70543ebca3a9e3bb28b28672f1f5ca8797ecf"
+size = 2248
+mtime_ms = 1788421596230
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:96e20551-c980-45cc-9e9a-08db83e26591/0292236b-0f89-42de-b730-525f8f6a808f/7c15c6e9-d4d6-4655-9657-6606f1ac3ef8"
+storage_version_token = "1788421607035076"
+content_type = "application/octet-stream"
