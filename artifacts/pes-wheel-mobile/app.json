@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "PES WHEEL",
-    "slug": "peswheel",
+    "name": "كوينز eFootBall",
+    "slug": "efootball",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon_2.png",
-    "scheme": "peswheel",
+    "scheme": "efootball",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -15,10 +15,10 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.peswheel.app"
+      "bundleIdentifier": "com.efootball.app"
     },
     "android": {
-      "package": "com.peswheel.app"
+      "package": "com.efootball.app"
     },
     "web": {
       "favicon": "./assets/images/icon_2.png"
